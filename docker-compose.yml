@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./config:/app/config
+      - /etc/haproxy:/etc/haproxy:ro
+    # Add access to reload HAProxy service
+    # May need privileged mode or specific capabilities
+
+volumes:
+  config-data:
