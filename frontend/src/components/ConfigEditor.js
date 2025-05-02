@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Button, TextField, Box, Alert, Snackbar } from '@mui/material';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://192.168.1.175:3000/api';
 
 const ConfigEditor = () => {
   const [config, setConfig] = useState('');

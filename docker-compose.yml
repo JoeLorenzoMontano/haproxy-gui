@@ -15,13 +15,20 @@ services:
     build: ./backend
     ports:
       - "3000:3000"
+    network_mode: "host"
     volumes:
       - ./backend:/app
       - /app/node_modules
       - ./config:/app/config
       - /etc/haproxy:/etc/haproxy:ro
-    # Add access to reload HAProxy service
-    # May need privileged mode or specific capabilities
+      - /var/run/haproxy.sock:/var/run/haproxy.sock:ro
+      - /var/lib/haproxy:/var/lib/haproxy:ro
+      - /bin/systemctl:/bin/systemctl:ro
+    cap_add:
+      - SYS_ADMIN
+    # These settings help the container interact with host services
+    environment:
+      - HOST_HOSTNAME=localhost
 
 volumes:
   config-data:

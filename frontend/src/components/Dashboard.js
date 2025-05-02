@@ -6,7 +6,7 @@ import StopIcon from '@mui/icons-material/Stop';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://192.168.1.175:3000/api';
 
 const Dashboard = () => {
   const [status, setStatus] = useState({ status: 'unknown', details: '', version: '' });
