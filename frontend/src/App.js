@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Dashboard from './components/Dashboard';
 import ConfigEditor from './components/ConfigEditor';
+import StructuredConfigEditor from './components/StructuredConfigEditor';
 import Stats from './components/Stats';
 import Navbar from './components/Navbar';
 
@@ -26,7 +27,8 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/config" element={<ConfigEditor />} />
+          <Route path="/config" element={<StructuredConfigEditor />} />
+          <Route path="/config/raw" element={<ConfigEditor />} />
           <Route path="/stats" element={<Stats />} />
         </Routes>
       </Router>
