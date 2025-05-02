@@ -52,6 +52,25 @@ const Dashboard = () => {
       setActionLoading(false);
     }
   };
+  
+  const handleSetupStats = async () => {
+    setActionLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/setup-stats`);
+      setMessage({ text: 'HAProxy stats setup successfully', type: 'success' });
+      setShowMessage(true);
+      setTimeout(fetchStatus, 1000); // Refresh status after action
+    } catch (error) {
+      console.error('Error setting up HAProxy stats:', error);
+      setMessage({ 
+        text: error.response?.data?.error || 'Failed to set up HAProxy stats', 
+        type: 'error' 
+      });
+      setShowMessage(true);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleCloseMessage = () => {
     setShowMessage(false);
@@ -164,6 +183,16 @@ const Dashboard = () => {
                   disabled={actionLoading}
                 >
                   Restart
+                </Button>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                <Button
+                  variant="outlined"
+                  color="info"
+                  onClick={() => handleSetupStats()}
+                  disabled={actionLoading}
+                >
+                  Enable Stats Collection
                 </Button>
               </Box>
               {actionLoading && (

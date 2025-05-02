@@ -18,6 +18,7 @@ cp $HAPROXY_CFG "${HAPROXY_CFG}.bak.$(date +%Y%m%d%H%M%S)"
 # Set appropriate permissions on the HAProxy config
 echo "Setting permissions on HAProxy configuration files..."
 chmod 664 $HAPROXY_CFG
+chmod 775 $(dirname $HAPROXY_CFG)  # Make directory writable
 chown root:docker $HAPROXY_CFG
 
 # Create the config directory for storing backups

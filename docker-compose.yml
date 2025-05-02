@@ -20,7 +20,7 @@ services:
       - ./backend:/app
       - /app/node_modules
       - ./config:/app/config
-      - /etc/haproxy:/etc/haproxy:ro
+      - /etc/haproxy:/etc/haproxy
       - /var/run/haproxy.sock:/var/run/haproxy.sock:ro
       - /var/lib/haproxy:/var/lib/haproxy:ro
       - /bin/systemctl:/bin/systemctl:ro

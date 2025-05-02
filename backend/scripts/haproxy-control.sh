@@ -10,63 +10,67 @@ if [ -z "$ACTION" ]; then
   exit 1
 fi
 
-# Check if we're running in a container
-if [ -f /.dockerenv ]; then
-  # When running in a container, we need to execute the command on the host
-  # This requires that the docker-compose.yml has proper volume mounts
-  # and that the sudo permissions are correctly set up
-  
-  case "$ACTION" in
-    start)
-      echo "Starting HAProxy..."
-      if command -v sudo >/dev/null 2>&1; then
-        sudo systemctl start haproxy
+# Define HAProxy configuration path
+HAPROXY_CONFIG="/etc/haproxy/haproxy.cfg"
+
+# Direct HAProxy control using the binary
+# This avoids systemctl which might not be available or properly mapped in container
+case "$ACTION" in
+  start)
+    echo "Starting HAProxy..."
+    if pgrep haproxy > /dev/null; then
+      echo "HAProxy is already running"
+    else
+      haproxy -f $HAPROXY_CONFIG -D -p /var/run/haproxy.pid
+    fi
+    ;;
+  stop)
+    echo "Stopping HAProxy..."
+    if [ -f /var/run/haproxy.pid ]; then
+      kill -TERM $(cat /var/run/haproxy.pid)
+    else
+      pkill -TERM haproxy
+    fi
+    ;;
+  restart)
+    echo "Restarting HAProxy..."
+    if [ -f /var/run/haproxy.pid ]; then
+      kill -TERM $(cat /var/run/haproxy.pid)
+    else
+      pkill -TERM haproxy
+    fi
+    sleep 1
+    haproxy -f $HAPROXY_CONFIG -D -p /var/run/haproxy.pid
+    ;;
+  reload)
+    echo "Reloading HAProxy..."
+    # Try direct HAProxy reload
+    if [ -f /var/run/haproxy.pid ]; then
+      haproxy -f $HAPROXY_CONFIG -D -p /var/run/haproxy.pid -sf $(cat /var/run/haproxy.pid)
+    else
+      # Fall back to systemctl if available
+      if command -v systemctl >/dev/null 2>&1; then
+        systemctl reload haproxy
       else
-        # Fallback if sudo is not available
-        ssh -o StrictHostKeyChecking=no localhost "systemctl start haproxy" || \
-        echo "Error: Cannot start HAProxy. Make sure permissions are set correctly."
+        # Last resort - stop and start
+        pkill -TERM haproxy
+        sleep 1
+        haproxy -f $HAPROXY_CONFIG -D -p /var/run/haproxy.pid
       fi
-      ;;
-    stop)
-      echo "Stopping HAProxy..."
-      if command -v sudo >/dev/null 2>&1; then
-        sudo systemctl stop haproxy
-      else
-        ssh -o StrictHostKeyChecking=no localhost "systemctl stop haproxy" || \
-        echo "Error: Cannot stop HAProxy. Make sure permissions are set correctly."
-      fi
-      ;;
-    restart)
-      echo "Restarting HAProxy..."
-      if command -v sudo >/dev/null 2>&1; then
-        sudo systemctl restart haproxy
-      else
-        ssh -o StrictHostKeyChecking=no localhost "systemctl restart haproxy" || \
-        echo "Error: Cannot restart HAProxy. Make sure permissions are set correctly."
-      fi
-      ;;
-    reload)
-      echo "Reloading HAProxy..."
-      if command -v sudo >/dev/null 2>&1; then
-        sudo systemctl reload haproxy
-      else
-        ssh -o StrictHostKeyChecking=no localhost "systemctl reload haproxy" || \
-        echo "Error: Cannot reload HAProxy. Make sure permissions are set correctly."
-      fi
-      ;;
-    *)
-      echo "Invalid action: $ACTION. Must be start, stop, restart, or reload."
-      exit 1
-      ;;
-  esac
-else
-  # Running directly on the host
-  systemctl "$ACTION" haproxy
-fi
+    fi
+    ;;
+  *)
+    echo "Invalid action: $ACTION. Must be start, stop, restart, or reload."
+    exit 1
+    ;;
+esac
 
 # Check if the action was successful
 if [ $? -eq 0 ]; then
   echo "HAProxy $ACTION completed successfully."
+  if [ "$ACTION" = "reload" ] || [ "$ACTION" = "start" ] || [ "$ACTION" = "restart" ]; then
+    echo "HAProxy is running with PID: $(cat /var/run/haproxy.pid 2>/dev/null || pgrep haproxy)"
+  fi
   exit 0
 else
   echo "HAProxy $ACTION failed."

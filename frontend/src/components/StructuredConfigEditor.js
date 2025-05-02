@@ -137,11 +137,24 @@ const StructuredConfigEditor = () => {
                 {structuredConfig.backends.map((backend, index) => (
                   <Paper key={index} sx={{ mb: 2, p: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="subtitle1">{backend.name}</Typography>
-                      <Switch
-                        checked={backend.active}
-                        onChange={() => handleToggleBackend(index)}
-                      />
+                      <Box>
+                        <Typography variant="subtitle1">{backend.name}</Typography>
+                        {backend.referencedIn && backend.referencedIn.length > 0 && (
+                          <Typography variant="caption" color="text.secondary">
+                            Used in: {backend.referencedIn.map(ref => ref.frontendName).join(', ')}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ mr: 1 }}>
+                          {backend.active ? 'Enabled' : 'Disabled'}
+                        </Typography>
+                        <Switch
+                          checked={backend.active}
+                          onChange={() => handleToggleBackend(index)}
+                          color="primary"
+                        />
+                      </Box>
                     </Box>
                     <Divider sx={{ mb: 2 }} />
                     <TextField
